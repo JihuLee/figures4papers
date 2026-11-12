@@ -67,6 +67,7 @@ The **scientific figure making** skill lives in `scientific-figure-making/`. Dem
 ```
 scientific-figure-making/
 ├── SKILL.md                              # Quick reference: metadata, when to use, patterns, links
+├── examples/                             # Copies of figure_*/*.py (synced by scripts/sync_skill_examples.sh)
 └── references/
     ├── api.md                            # API/conventions to implement (palette, helpers, export)
     ├── common-patterns.md                # Reusable figure patterns
@@ -95,7 +96,7 @@ npx skills add JihuLee/figures4papers
 
 Other commands: `npx skills add JihuLee/figures4papers --list` (preview), `npx skills update` (pull the latest version), `npx skills remove scientific-figure-making` (uninstall).
 
-Only the `scientific-figure-making/` folder is installed. The `figure_*` demo scripts stay on GitHub; the skill links to them from `references/demos.md`.
+Only the `scientific-figure-making/` folder is installed. It includes copies of the `figure_*` Python scripts under `examples/` (about 200 KB); the rendered PNG/PDF outputs are not installed. After editing any `figure_*/*.py`, run `scripts/sync_skill_examples.sh` to refresh the copies (`--check` exits 1 if they are stale).
 
 </details>
 

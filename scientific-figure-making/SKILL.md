@@ -12,7 +12,7 @@ description: >-
 
 # Scientific figure making
 
-Open `references/` only as needed; do not preload every file. Start from the table below, then follow links inside the document you opened (and into `figure_*` code via [references/demos.md](references/demos.md)) instead of loading the full reference set up front.
+Open `references/` only as needed; do not preload every file. Start from the table below, then follow links inside the document you opened (and into the bundled `examples/figure_*` scripts via [references/demos.md](references/demos.md)) instead of loading the full reference set up front.
 
 ## When to load this skill
 
@@ -35,4 +35,5 @@ Open `references/` only as needed; do not preload every file. Start from the tab
 | [references/api.md](references/api.md) | Function signatures, `PALETTE`, validation rules |
 | [references/common-patterns.md](references/common-patterns.md) | Layout patterns, legend panel, print-safe bars |
 | [references/design-theory.md](references/design-theory.md) | Typography, export policy, palette rationale |
-| [references/demos.md](references/demos.md) | Canonical `figure_*` demo links in figures4papers |
+| [references/demos.md](references/demos.md) | Which `examples/figure_*` script to open for a chart type |
+| `examples/figure_*/*.py` | Production scripts to copy and adapt (find the right one via demos.md) |

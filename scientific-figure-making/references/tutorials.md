@@ -118,11 +118,13 @@ finalize_figure(fig, "output/heatmap", formats=["png", "pdf"], dpi=300)
 
 These tutorials cover grouped bars, multi-panel trends with a legend column, and heatmaps. For other house-style figures, open the closest match in [demos.md](demos.md), then align constants and `finalize_figure` with [api.md](api.md) and typography or export rules in [design-theory.md](design-theory.md).
 
-- **Radar or polar comparisons:** `figure_VIGIL` (for example `plot_comparison_radar.py`).
-- **Comparison or post-training line panels:** `figure_VIGIL`, `figure_ophthal_review`, or `figure_Cflows`, depending on layout.
-- **Scatter-heavy or schematic panels:** `figure_Dispersion` and `figure_VIGIL` concept plots are good starting points.
-- **Bar-style quantitative comparisons:** `figure_CellSpliceNet`, `figure_ImmunoStruct`, and `figure_Brainteaser`.
-- **Heatmap-focused examples:** `figure_RNAGenScape`.
+All paths below are relative to the skill folder.
+
+- **Radar or polar comparisons:** `examples/figure_VIGIL/plot_comparison_radar.py`.
+- **Comparison or post-training line panels:** `examples/figure_VIGIL/plot_posttraining.py`, `examples/figure_ophthal_review/plot_trend.py`, or `examples/figure_Cflows/`, depending on layout.
+- **Scatter-heavy or schematic panels:** `examples/figure_Dispersion/` and `examples/figure_VIGIL/plot_concept.py` are good starting points.
+- **Bar-style quantitative comparisons:** `examples/figure_CellSpliceNet/`, `examples/figure_ImmunoStruct/`, and `examples/figure_Brainteaser/`.
+- **Heatmap-focused examples:** `examples/figure_RNAGenScape/`.
 
 For more layout ideas (ultra-wide panels, legend-only axes, print-safe bars), see [common-patterns.md](common-patterns.md).
 
