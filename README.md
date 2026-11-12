@@ -77,6 +77,28 @@ scientific-figure-making/
 
 ### Using this skill in an AI coding agent
 
+<details open>
+<summary><strong>Install with <code>npx skills add</code> (recommended)</strong></summary>
+
+Uses the [`skills`](https://github.com/vercel-labs/skills) CLI (requires Node.js). No clone needed.
+
+```bash
+# Claude Code, user-level (~/.claude/skills/), available in every project
+npx skills add JihuLee/figures4papers -g -a claude-code
+
+# Claude Code, project-level (./.claude/skills/), for the current project only
+npx skills add JihuLee/figures4papers -a claude-code
+
+# Pick agents interactively (Cursor, Codex, etc.)
+npx skills add JihuLee/figures4papers
+```
+
+Other commands: `npx skills add JihuLee/figures4papers --list` (preview), `npx skills update` (pull the latest version), `npx skills remove scientific-figure-making` (uninstall).
+
+Only the `scientific-figure-making/` folder is installed. The `figure_*` demo scripts stay on GitHub; the skill links to them from `references/demos.md`.
+
+</details>
+
 <details>
 <summary><strong>No installation (path-based)</strong></summary>
 
