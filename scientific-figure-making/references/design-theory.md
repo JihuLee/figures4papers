@@ -16,8 +16,12 @@ The dominant house style is minimalist, high-contrast, and publication-oriented:
 - Axes cleanup:
   - `axes.spines.right = False`
   - `axes.spines.top = False`
-- LaTeX usage:
-  - `text.usetex = True` appears in TeX-heavy scripts (6 files), especially when math-rich labels are needed.
+- Math (LaTeX per segment):
+  - Only the `$...$` segments of a label go through LaTeX; the rest of the label stays in the sans figure font. Each
+    math segment is its own `usetex=True` text object, measured and placed on the common baseline
+    (`scripts/mpl_texmath.py`: `mixed_text`, `mixed_legend`, `math_labels`). See section 8b.
+  - Never set `text.usetex = True` globally: it re-typesets every label, sans text and tick numbers included, in a
+    LaTeX font. The example scripts used to do this; they now use the per-segment helper.
 - Vector text:
   - `svg.fonttype = 'none'` appears when preserving editable text in vector exports.
 
@@ -99,8 +103,42 @@ PUBLICATION_RCPARAMS = {
     "axes.linewidth": 2.5,      # 3 for big bars, 2 for compact figures
     "legend.frameon": False,
     "svg.fonttype": "none",
+    "pdf.fonttype": 42,         # TrueType text in PDFs; the default (3) embeds Type 3 fonts that camera-ready checks reject
+    "ps.fonttype": 42,
 }
 ```
+
+## 8b) Math in Labels
+
+Typeset math with real LaTeX, in the paper's math font and notation, and leave the sans text alone:
+
+```python
+import mpl_texmath as tm                      # scientific-figure-making/scripts/mpl_texmath.py
+
+tm.setup_math(paper="paper/main.tex")         # math setup, packages and \newcommand macros of the paper
+tm.mixed_text(ax, 0.5, 0.9, r"scores $S[i,v,p]$", ha="center", transform=ax.transAxes)
+tm.mixed_text(ax, x, y, "$c_{FA}, c_{FR}$ and $c_{view}$", fontsize=6)   # segments on one baseline
+tm.mixed_legend(ax.legend())                  # legend entries such as r"$\ell_2$-repel"
+tm.math_labels(ax.get_xticklabels())          # labels that are one $...$ segment each
+tm.save_figure(fig, "figures/fig1")           # PDF + PNG, font and size check
+```
+
+- **Font matching.** `setup_math(paper=...)` reads the preamble, `\input` macro files and local `.sty`/`.cls`. The math is
+  Computer Modern unless the paper loads a math font package (`newtxmath`, `mathptmx`, `newpxmath`, ...).
+  `\usepackage{times}` (cvpr.sty) changes only the text font, so the math stays Computer Modern. Override with
+  `math="newtx"` or verbatim LaTeX. The paper's macros are copied, so write the paper's notation (`$c_{FA}$`, not
+  `$c_{\mathrm{FA}}$` when the paper writes `c_{FA}`).
+- **Sizes.** The math base size equals the label's font size, and LaTeX sets the scripts: 6pt → 5pt, 7pt → 5pt,
+  8pt → 6pt, 10pt → 7pt (other sizes are declared with 0.7×/0.5× and a 5pt floor). Make `figsize` the printed size
+  so these are printed sizes. `check_pdf` (run by `save_figure`) fails on text below 5pt and warns when math scripts
+  fall below 6pt. Fix it with a larger base size or a `\DeclareMathSizes` line (`setup_math(extra=...)`), never by
+  shrinking or hand-drawing subscripts.
+- **Output.** Math embeds Type 1 fonts (CMMI6, CMR5, ...); text uses TrueType (`pdf.fonttype = 42`); Type 3 is an
+  error. Without `dvipng`, `save_figure` rasterizes the PNG from the PDF (PyMuPDF or `pdftoppm`).
+- **Don'ts.** No global `text.usetex`; no subscripts drawn as separate smaller text; no mathtext in the sans font for
+  math (`$x_i$` without LaTeX); no silent change of the paper's notation.
+- **Tools.** Needs `latex` (TeX Live, MiKTeX or TinyTeX); `kpsewhich` lets `tm.add_tex_font('texgyreheros')` register
+  the TeX tree's Helvetica clone. Without LaTeX the helper warns and falls back to mathtext in Computer Modern.
 
 ## 9) Recommended Default Palette
 
@@ -124,7 +162,8 @@ PALETTE = {
 To match the repository's visual identity for new figures:
 
 1. Apply minimalist spines (top/right off), frameless legends, and explicit y-limits.
-2. Use Helvetica/Arial-like sans fonts with larger sizing for bars.
+2. Use Helvetica/Arial-like sans fonts with larger sizing for bars. Typeset math per segment with LaTeX (section 8b),
+   never with a global `text.usetex`.
 3. Choose colors from the blue-green-red-neutral family above; avoid unrelated palettes.
 4. Finalize with `tight_layout(pad=2)` and export at `dpi=300` (or `600` for dense bar panels).
 5. Use hatch/edge encodings for print-safe category separation when bars overlap in hue.

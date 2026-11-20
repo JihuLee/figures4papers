@@ -5,6 +5,12 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import proj3d
 import matplotlib.cm as cm
+import sys
+_HERE = os.path.dirname(os.path.abspath(__file__))
+# mpl_texmath: per-segment LaTeX math. Repo layout: ../scientific-figure-making/scripts; skill copy: ../../scripts
+for _p in ('../scientific-figure-making/scripts', '../../scripts'):
+    sys.path.insert(0, os.path.normpath(os.path.join(_HERE, _p)))
+import mpl_texmath as tm  # noqa: E402
 
 
 EPSILON = 1e-6
@@ -314,8 +320,8 @@ def plot_l2_repel(ax):
     arrow_norm = Line2D([0, 1], [0, 0], color="#9a4d8e", alpha=0.8,
                         marker=r'$\rightarrow$', linestyle="None", markersize=25,
                         label="norm regularization")
-    ax.legend(handles=[arrow_disp, arrow_norm], frameon=False, loc="lower center",
-              fontsize=24, bbox_to_anchor=(0.5, 0))
+    tm.mixed_legend(ax.legend(handles=[arrow_disp, arrow_norm], frameon=False, loc="lower center",
+                              fontsize=24, bbox_to_anchor=(0.5, 0)))   # LaTeX for the $\ell_2$ only
 
     ax.text(0.8, 0.0, 8.0, "pairwise dispersion", color="#b64342", fontsize=24, ha="left", va="center",
             bbox=dict(facecolor="white", alpha=1, edgecolor="none", boxstyle="round,pad=0.2"))
@@ -383,8 +389,14 @@ def plot_angular_spread(ax):
 
 if __name__ == "__main__":
     save_path = './figures/illustration.png'
-    plt.rcParams['text.usetex'] = True
+    # Only the $...$ segments go through LaTeX (tm.mixed_legend); never set text.usetex globally.
+    # The text was LaTeX's default sans (Computer Modern Sans) when text.usetex was global; Latin Modern Sans from the
+    # TeX tree keeps that look without sending the text through LaTeX. Marker glyphs use mathtext's CM shapes.
+    tm.add_tex_font('lmsans10')
     plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['font.sans-serif'] = ['Latin Modern Sans', 'CMU Sans Serif', 'DejaVu Sans']
+    plt.rcParams['mathtext.fontset'] = 'cm'
+    tm.setup_math()
     fig = plt.figure(figsize=(24, 8))
 
     ax = fig.add_subplot(1, 4, 1)
@@ -401,4 +413,4 @@ if __name__ == "__main__":
 
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     fig.tight_layout(pad=2)
-    fig.savefig(save_path, dpi=300)
+    tm.save_figure(fig, save_path, dpi=300)   # PDF + PNG (rasterized from the PDF when dvipng is missing)

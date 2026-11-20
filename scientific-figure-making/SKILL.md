@@ -36,4 +36,13 @@ Open `references/` only as needed; do not preload every file. Start from the tab
 | [references/common-patterns.md](references/common-patterns.md) | Layout patterns, legend panel, print-safe bars |
 | [references/design-theory.md](references/design-theory.md) | Typography, export policy, palette rationale |
 | [references/demos.md](references/demos.md) | Which `examples/figure_*` script to open for a chart type |
+| `scripts/mpl_texmath.py` | Any label with math: `$...$` segments typeset by LaTeX in the paper's math font, the rest in the sans font (design-theory.md section 8b) |
 | `examples/figure_*/*.py` | Production scripts to copy and adapt (find the right one via demos.md) |
+
+## Math in labels
+
+Typeset only the `$...$` segments with LaTeX and keep the rest of each label in the sans figure font: import
+`scripts/mpl_texmath.py`, call `setup_math(paper="main.tex")` so the math font and macros match the paper, and draw
+mixed labels with `mixed_text` / `mixed_legend`. Never set `text.usetex = True` globally, never draw subscripts as
+separate smaller text, and never use mathtext in the sans font for math. Save with `save_figure`, which checks for
+Type 3 fonts and text below 5pt. Details: [references/design-theory.md](references/design-theory.md) section 8b.

@@ -2,16 +2,22 @@ import os
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import sys
+_HERE = os.path.dirname(os.path.abspath(__file__))
+# mpl_texmath: per-segment LaTeX math. Repo layout: ../scientific-figure-making/scripts; skill copy: ../../scripts
+for _p in ('../scientific-figure-making/scripts', '../../scripts'):
+    sys.path.insert(0, os.path.normpath(os.path.join(_HERE, _p)))
+import mpl_texmath as tm  # noqa: E402
 
 
-summary_label = r'\textit{Improvement}'
+summary_label = 'Improvement'   # drawn in italics
 options = ['VAE', 'DDPM', 'LDM', 'FM',
            'DiffAb', 'IgLM', 'NOS-C', 'NOS-D',
            'OAE + gradient ascent',
            'OAE + MCMC',
            'OAE + hill climbing',
            'OAE + stochastic hill climbing',
-           r'$\texttt{RNAGenScape}$ \textbf{(ours)}',
+           r'$\texttt{RNAGenScape}$ (ours)',
            summary_label]
 colors = ["#cdcdcd", "#767676", "#4d4d4d", "#272727",
           "#c4ece7", "#ecc4c4", "#ecc4e7", "#ea84dd",
@@ -50,8 +56,12 @@ results_ribosome_pct_neg = [58.3, 54.1, 58.2, 53.6, 54.2, 65.5, 46.0, 53.6,
 if __name__ == '__main__':
     PLOT_DE_NOVO_SPEED = False
 
-    plt.rcParams['text.usetex'] = True
-    plt.rcParams['font.family'] = 'helvetica'
+    # Only the $...$ segments go through LaTeX (tm.mixed_text / tm.mixed_legend / tm.math_labels); the rest stays
+    # in the sans font. Never set text.usetex globally: it would re-typeset every label, sans text included.
+    tm.add_tex_font('texgyreheros')
+    plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'TeX Gyre Heros', 'DejaVu Sans']
+    tm.setup_math()   # Computer Modern; pass paper='main.tex' to use the paper's math font and macros
     plt.rcParams['font.size'] = 16
     plt.rcParams['axes.spines.right'] = False
     plt.rcParams['axes.spines.top'] = False
@@ -64,9 +74,9 @@ if __name__ == '__main__':
         ax.bar(np.arange(len(options)), 1 / np.array(results_inference), color=colors, label=options)
         ax.hlines(y=1 / results_inference[-1], xmin=-1, xmax=len(options), color=colors[-1], linestyle='--')
         ax.set_xlim([-1, len(options)])
-        ax.legend(loc='upper right', frameon=False, fontsize=12)
+        tm.mixed_legend(ax.legend(loc='upper right', frameon=False, fontsize=12))
         ax.set_xticks([])
-        ax.set_ylabel('Inference Throughput ' + r'$\uparrow$' +'\n(samples / ms)', fontsize=18)
+        ax.set_ylabel('Inference Throughput ↑\n(samples / ms)', fontsize=18)
 
         # Add braces.
         ymin, ymax = ax.get_ylim()
@@ -76,10 +86,10 @@ if __name__ == '__main__':
         start_opt = len_de_novo + 1
         end_opt = len(options) - 1
         mid_opt = (start_opt + end_opt) / 2
-        ax.text(mid_de_novo, ymin - 0.3,
+        tm.mixed_text(ax, mid_de_novo, ymin - 0.3,
             r'$\underbrace{\rule{5cm}{0pt}}_{\textrm{\textit{de\ novo}\ generative\ models}}$',
             ha='center', va='top', fontsize=14)
-        ax.text(mid_opt, ymin - 0.3,
+        tm.mixed_text(ax, mid_opt, ymin - 0.3,
             r'$\underbrace{\rule{9.2cm}{0pt}}_{\textrm{property\ optimization\ methods}}$',
             ha='center', va='top', fontsize=14)
         ax.spines['bottom'].set_position(('data', 0))
@@ -95,9 +105,11 @@ if __name__ == '__main__':
         options_speed = options[4:8] + [options[-2]]
         ax.bar(np.arange(len(options_speed)), speed_values, color=colors[4:8] + [colors[-1]], label=options_speed)
         ax.set_xlim([-1, len(options_speed)])
-        ax.legend(loc='upper left', frameon=False, fontsize=16, ncol=1)
+        leg = ax.legend(loc='upper left', frameon=False, fontsize=16, ncol=1)
+        leg.get_texts()[-1].set_fontweight('bold')   # '(ours)' in bold; the $\texttt{...}$ name is typeset by LaTeX
+        tm.mixed_legend(leg)
         ax.set_xticks([])
-        ax.set_ylabel('Inference Throughput ' + r'$\uparrow$' +'\n(samples / ms)', fontsize=18)
+        ax.set_ylabel('Inference Throughput ↑\n(samples / ms)', fontsize=18)
         ax.set_yscale('log')
         ymin, ymax = ax.get_ylim()
         ax.set_ylim(ymin, ymax * 20)
@@ -108,7 +120,7 @@ if __name__ == '__main__':
 
     fig.tight_layout(pad=1)
     os.makedirs('./figures', exist_ok=True)
-    fig.savefig('./figures/results_comparison_speed.png', dpi=300)
+    tm.save_figure(fig, './figures/results_comparison_speed.png', dpi=300)
     plt.close(fig)
 
 
@@ -141,7 +153,7 @@ if __name__ == '__main__':
     for (i, j), val in np.ndenumerate(improvements):
         if i == n_rows - 1:
             color = "forestgreen" if val >= 0 else "darkred"
-            label = f"{val:+.1f} \\%"
+            label = f"{val:+.1f} %"
             fontsize = 16
         else:
             cmap = cmap_red if j % 2 == 0 else cmap_blue
@@ -159,12 +171,16 @@ if __name__ == '__main__':
                         r'$\texttt{Zebrafish}~(+)$', r'$\texttt{Zebrafish}~(-)$',
                         r'$\texttt{Ribosome}~(+)$', r'$\texttt{Ribosome}~(-)$'],
                     fontsize=20, rotation=30)
+    tm.math_labels(ax.get_xticklabels())   # each label is one $...$ segment
     ax.tick_params(axis='x', which='both', bottom=False, top=False, length=0)
+    # y labels mix text and math ($\texttt{RNAGenScape}$ (ours)): mixed text next to empty ticks
     ax.set_yticks(np.arange(n_rows) + 0.5)
-    ax.set_yticklabels(options, rotation=0, fontsize=20, ha='right')
-    for tick in ax.get_yticklabels():
-        if r'$\texttt{RNAGenScape}$' in tick.get_text():
-            tick.set_fontsize(24)
+    ax.set_yticklabels([])
+    pad = plt.rcParams['ytick.major.size'] + plt.rcParams['ytick.major.pad']
+    for loc, item in enumerate(options):
+        tm.mixed_text(ax, 0, loc + 0.5, item, ha='right', va='center', transform=ax.get_yaxis_transform(), offset=(-pad, 0),
+                      fontsize=24 if 'RNAGenScape' in item else 20, fontweight='bold' if 'RNAGenScape' in item else 'normal',
+                      fontstyle='italic' if item == summary_label else 'normal')
     ax.set_frame_on(False)
     ax.invert_yaxis()
     # n_rows, n_cols = improvements.shape
@@ -193,14 +209,14 @@ if __name__ == '__main__':
     for (i, j), val in np.ndenumerate(percentages):
         if i == n_rows - 1:
             color = "forestgreen" if val >= 0 else "darkred"
-            label = f"{val:+.1f} \\%"
+            label = f"{val:+.1f} %"
             fontsize = 16
         else:
             norm = mpl.colors.Normalize(vmin=max(50, vmin[j]), vmax=vmax[j])
             r, g, b, _ = cmap_red(norm(val))
             lum = 0.299 * r + 0.587 * g + 0.114 * b
             color = "white" if lum < 0.5 else "black"
-            label = f"{val:.1f} \\%"
+            label = f"{val:.1f} %"
             fontsize = 14
         ax.text(j, i + 0.5, label, ha="center", va="center",
                 fontsize=fontsize, color=color)
@@ -211,6 +227,7 @@ if __name__ == '__main__':
                         r'$\texttt{Zebrafish}~(+)$', r'$\texttt{Zebrafish}~(-)$',
                         r'$\texttt{Ribosome}~(+)$', r'$\texttt{Ribosome}~(-)$'],
                     fontsize=20, rotation=30)
+    tm.math_labels(ax.get_xticklabels())
     ax.tick_params(axis='x', which='both', bottom=False, top=False, length=0)
     ax.set_yticks([])
     # ax.set_yticks(np.arange(n_rows) + 0.5)
@@ -224,5 +241,5 @@ if __name__ == '__main__':
 
     fig.tight_layout(pad=2)
     os.makedirs('./figures', exist_ok=True)
-    fig.savefig('./figures/results_comparison_optimization.png', dpi=300)
+    tm.save_figure(fig, './figures/results_comparison_optimization.png', dpi=300)
     plt.close(fig)

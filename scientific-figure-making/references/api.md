@@ -36,13 +36,15 @@ Ordered list of colors used when `colors` is not passed to plot helpers: `[blue_
 class FigureStyle:
     font_size: int = 16
     axes_linewidth: float = 2.5
-    use_tex: bool = False
+    use_tex: bool = False   # keep False: math goes through LaTeX per $...$ segment (mpl_texmath), never globally
     font_family: tuple[str, ...] = ("DejaVu Sans", "Helvetica", "Arial", "sans-serif")
 ```
 
 - **font_size:** Base font size (use 24 for large bar panels, 15-16 for compact plots).
 - **axes_linewidth:** Spine width (3 for big bars, 2 for compact).
-- **use_tex:** Set `True` only when LaTeX is installed and math labels are required.
+- **use_tex:** Leave `False`. `text.usetex = True` would re-typeset every label, sans text included. For math, call
+  `mpl_texmath.setup_math()` and draw labels with `mixed_text` / `mixed_legend` / `math_labels` (see below and
+  [design-theory.md](design-theory.md) section 8b): only the `$...$` segments are typeset by LaTeX.
 - **font_family:** Fallback list for sans-serif fonts.
 
 ---
@@ -134,6 +136,18 @@ make_sphere_illustration(ax, light_dir=(-0.55, 0.65, 0.55), resolution=280)
 - `make_grouped_bar`: `len(categories)` must equal number of columns in `series`.
 - `make_trend`: each series must have same length as `x`.
 - `finalize_figure`: supported formats are pdf, svg, eps, png, jpg, jpeg, tif, tiff.
+
+## Math in labels (`scripts/mpl_texmath.py`)
+
+| Function | Use |
+|---|---|
+| `setup_math(paper=None, math=None, macros=True, extra="")` | LaTeX setup for `$...$` segments only: the paper's math font, math packages and macros (`text.latex.preamble`), `pdf.fonttype = 42`. Default Computer Modern. |
+| `mixed_text(ax, x, y, s, fontsize=None, ha="left", va="baseline", transform=None, rotation=0, offset=(0, 0), **kw)` | Draw a label whose `$...$` segments are separate usetex texts on the same baseline as the sans text; `\n` for lines; returns the Text list. Use it for axis-label, annotation and tick-style labels that mix text and math. |
+| `mixed_legend(leg)` | Rebuild legend entries containing `$...$` the same way (keeps each entry's weight, style and colour). |
+| `math_labels(texts)` | Switch existing labels that are exactly one `$...$` segment (tick labels, titles) to LaTeX. |
+| `save_figure(fig, path, formats=("pdf", "png"), dpi=300, check=True, printed_scale=1.0)` | Save PDF and PNG (PNG rasterized from the PDF without dvipng), turn pure-math tick labels (log axes) into LaTeX first, then `check_pdf`. |
+| `check_pdf(pdf, printed_scale=1.0)` | Fonts and printed text sizes: errors for Type 3 fonts and text below 5pt, warnings for math scripts below 6pt. |
+| `add_tex_font(name)` | Register an OpenType font from the TeX tree (`texgyreheros` = Helvetica clone, `lmsans10` = Latin Modern Sans). |
 
 See [design-theory.md](design-theory.md) for visual and export conventions.
 

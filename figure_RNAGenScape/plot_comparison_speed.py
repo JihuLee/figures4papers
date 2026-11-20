@@ -2,6 +2,12 @@ import os
 
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
+_HERE = os.path.dirname(os.path.abspath(__file__))
+# mpl_texmath: per-segment LaTeX math. Repo layout: ../scientific-figure-making/scripts; skill copy: ../../scripts
+for _p in ('../scientific-figure-making/scripts', '../../scripts'):
+    sys.path.insert(0, os.path.normpath(os.path.join(_HERE, _p)))
+import mpl_texmath as tm  # noqa: E402
 
 
 # Inference time in milliseconds per sample, with the plotting color.
@@ -16,14 +22,18 @@ results_inference = [
     ('MFM', 1.5581, 0.0082, '#f4aa6d'),
     ('gg-dWJS', 0.2069, 0.0020, '#70cab4'),
     ('MPGD', 0.4019, 0.0086, '#8ab4e8'),
-    (r'$\texttt{RNAGenScape}$ \textbf{(ours)}', 0.9518, 0.0025, '#0f4d92'),
+    (r'$\texttt{RNAGenScape}$ (ours)', 0.9518, 0.0025, '#0f4d92'),
 ]
 
 
 def plot_speed(output_path='figures/results_comparison_speed.png', show_errorbars=True):
     """Save the inference throughput comparison (samples/ms)."""
-    plt.rcParams['text.usetex'] = True
-    plt.rcParams['font.family'] = 'helvetica'
+    # Only the $...$ segments go through LaTeX (tm.mixed_text / tm.mixed_legend / tm.math_labels); the rest stays
+    # in the sans font. Never set text.usetex globally: it would re-typeset every label, sans text included.
+    tm.add_tex_font('texgyreheros')
+    plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'TeX Gyre Heros', 'DejaVu Sans']
+    tm.setup_math()   # Computer Modern; pass paper='main.tex' to use the paper's math font and macros
     plt.rcParams['font.size'] = 16
     plt.rcParams['axes.spines.right'] = False
     plt.rcParams['axes.spines.top'] = False
@@ -46,9 +56,11 @@ def plot_speed(output_path='figures/results_comparison_speed.png', show_errorbar
     )
 
     ax.set_xlim([-1, len(options)])
-    ax.legend(loc='upper left', frameon=False, fontsize=14, ncol=2)
+    leg = ax.legend(loc='upper left', frameon=False, fontsize=14, ncol=2)
+    leg.get_texts()[-1].set_fontweight('bold')   # '(ours)' in bold; the $\texttt{...}$ name is typeset by LaTeX
+    tm.mixed_legend(leg)
     ax.set_xticks([])
-    ax.set_ylabel('Inference Throughput ' + r'$\uparrow$' + '\n(samples / ms)', fontsize=18)
+    ax.set_ylabel('Inference Throughput ↑\n(samples / ms)', fontsize=18)
     ax.set_yscale('log')
     ymin, ymax = ax.get_ylim()
     ax.set_ylim(ymin, ymax * 50)
@@ -59,7 +71,7 @@ def plot_speed(output_path='figures/results_comparison_speed.png', show_errorbar
 
     fig.tight_layout(pad=1)
     os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
-    fig.savefig(output_path, dpi=300)
+    tm.save_figure(fig, output_path, dpi=300)   # PDF + PNG (rasterized from the PDF when dvipng is missing)
     plt.close(fig)
 
 if __name__ == '__main__':
