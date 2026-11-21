@@ -55,8 +55,9 @@ if __name__ == "__main__":
     num_points = 16
 
     np.random.seed(1)
-    plt.rcParams['text.usetex'] = True
+    # No math here, so no LaTeX (text.usetex is never switched on globally)
     plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['pdf.fonttype'] = 42
     fig = plt.figure(figsize=(18, 6))
 
     ax = fig.add_subplot(1, 3, 1)

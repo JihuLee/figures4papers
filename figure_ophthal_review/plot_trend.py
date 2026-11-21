@@ -72,8 +72,10 @@ def mark_events(ax, time_arr, y_curve, events, dy=0.1):
     return
 
 def plot_curve(fig_name: str):
-    plt.rcParams['text.usetex'] = True
-    plt.rcParams['font.family'] = 'helvetica'
+    # No math here, so no LaTeX: text.usetex is never switched on globally (it would also re-typeset the sans text)
+    plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'TeX Gyre Heros', 'DejaVu Sans']
+    plt.rcParams['pdf.fonttype'] = 42
     plt.rcParams['font.size'] = 15
     plt.rcParams['axes.spines.right'] = False
     plt.rcParams['axes.spines.top'] = False
